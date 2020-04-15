@@ -52,15 +52,17 @@ type (
 	}
 
 	User struct {
-		Name    string  `json:"name"`
-		Id      string  `json:"id"`
-		TeamId  string  `json:"team_id"`
-		IsBot   bool    `json:"is_bot"`
-		Deleted bool    `json:"deleted"`
-		Profile Profile `json:"profile"`
+		Name       string  `json:"name"`
+		Id         string  `json:"id"`
+		TeamId     string  `json:"team_id"`
+		IsBot      bool    `json:"is_bot"`
+		Deleted    bool    `json:"deleted"`
+		Restricted bool    `json:"is_restricted"`
+		Profile    Profile `json:"profile"`
 	}
 
 	Profile struct {
+		IsBot     bool   `json:"always_active"`
 		FirstName string `json:"first_name"`
 		LastName  string `json:"last_name"`
 		RealName  string `json:"real_name"`
@@ -137,9 +139,19 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	// Filter out deleted accounts, bots and users without @tink.se email addresses
 	filteredUsers := []User{}
 	for _, user := range userlist.Members {
-		if !user.Deleted && !user.IsBot && strings.HasSuffix(user.Profile.Email, cfg.EmailFilter) {
-			filteredUsers = append(filteredUsers, user)
+		if user.Deleted {
+			continue
 		}
+		if user.IsBot {
+			continue
+		}
+		if user.Profile.IsBot {
+			continue
+		}
+		if len(cfg.EmailFilter) > 0 && !strings.HasSuffix(user.Profile.Email, cfg.EmailFilter) {
+			continue
+		}
+		filteredUsers = append(filteredUsers, user)
 	}
 
 	// Sort users on first name
