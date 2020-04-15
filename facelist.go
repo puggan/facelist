@@ -42,11 +42,9 @@ type (
 		EmailFilter    string `yaml:"emailFilter"`
 		ShowRestricted bool `yaml:"showRestricted"`
 		SlackAPIToken  string `yaml:"slackAPIToken"`
-		SlackTeam      string `yaml:"slackTeam"`
 	}
 
 	UserList struct {
-		SlackTeam string
 		Ok        bool   `json:"ok"`
 		ErrorMsg  string `json:"error"`
 		Members   []User `json:"members"`
@@ -90,15 +88,10 @@ func init() {
 		log.Fatalf("Unable to decode config: %v\n", err)
 	}
 
-	if cfg.SlackTeam == "" {
-		log.Fatalf("SLACK_TEAM is not set!")
-		os.Exit(1)
-	}
 	if cfg.SlackAPIToken == "" {
 		log.Fatalf("SLACK_API_TOKEN is not set!")
 		os.Exit(1)
 	}
-	userlist.SlackTeam = cfg.SlackTeam
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {

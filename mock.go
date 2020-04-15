@@ -6,7 +6,7 @@ import (
 )
 
 func getMockedUsers() UserList {
-	var userlist = UserList{SlackTeam: "tink"}
+	var userlist = UserList{}
 	file, _ := ioutil.ReadFile("mocks/users.list.json")
 
 	_ = json.Unmarshal([]byte(file), &userlist)
