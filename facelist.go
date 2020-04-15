@@ -39,9 +39,10 @@ var (
 
 type (
 	config struct {
-		EmailFilter   string `yaml:"emailFilter"`
-		SlackAPIToken string `yaml:"slackAPIToken"`
-		SlackTeam     string `yaml:"slackTeam"`
+		EmailFilter    string `yaml:"emailFilter"`
+		ShowRestricted bool `yaml:"showRestricted"`
+		SlackAPIToken  string `yaml:"slackAPIToken"`
+		SlackTeam      string `yaml:"slackTeam"`
 	}
 
 	UserList struct {
@@ -146,6 +147,9 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 		if user.Profile.IsBot {
+			continue
+		}
+		if !cfg.ShowRestricted && user.Restricted {
 			continue
 		}
 		if len(cfg.EmailFilter) > 0 && !strings.HasSuffix(user.Profile.Email, cfg.EmailFilter) {
