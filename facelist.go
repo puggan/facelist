@@ -52,7 +52,7 @@ type (
 
 func init() {
 	log.Println("Starting facelist")
-	
+
 	configFile := flag.String("config", "scouterna.yaml", "Configuration file to load")
 	flag.Parse()
 	b, err := ioutil.ReadFile(*configFile)
@@ -60,13 +60,13 @@ func init() {
 	if err != nil {
 		log.Fatalf("Unable to read config: %v\n", err)
 	}
-	
+
 	err = yaml.Unmarshal(b, &cfg)
 
 	if err != nil {
 		log.Fatalf("Unable to decode config: %v\n", err)
 	}
-	
+
 	if cfg.ApplicationID == "" {
 		log.Fatalf("appID is not set!")
 		os.Exit(1)
@@ -75,7 +75,7 @@ func init() {
 		log.Fatalf("tenantID is not set!")
 		os.Exit(1)
 	}
-	
+
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
@@ -89,39 +89,39 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
     		log.Println("Credentials are probably wrong or system time is not synced: ", err)
 		}
-		
-		
+
+
 		var g msgraph.Group
 		g, err = graphClient.GetGroup(cfg.GroupID)
 		userlist, err = g.ListMembers()
-		
-		
+
+
 
 		if err != nil {
 			log.Printf(err.Error())
 		}
 	}
 
-	// Filter out deleted accounts, bots and users without @tink.se email addresses
-	
+	// Filter out deleted accounts, bots and users without email addresses according to cfg.EmailFilter
+
 	filteredUsers := []msgraph.User{}
-	
+
 	for _, user := range userlist {
 		if strings.HasSuffix(user.Mail, cfg.EmailFilter) {
 			filteredUsers = append(filteredUsers, user)
 		}
 	}
-	
-	
+
+
 	//Sort users on first name
-	
+
 	sort.SliceStable(filteredUsers, func(i, j int) bool {
 		return strings.ToLower(filteredUsers[i].DisplayName) < strings.ToLower(filteredUsers[j].DisplayName)
 	})
-	
+
 
 	userlist = filteredUsers
-	
+
 	if err := IndexTemplate.Execute(w, userlist); err != nil {
 		log.Printf("Failed to execute index template: %v\n", err)
 		http.Error(w, "Oops. That's embarrassing. Please try again later.", http.StatusInternalServerError)
